@@ -24,13 +24,46 @@ describe "Checkout" do
         end
       end
     end
+
+    @pricing_rules = [buy_one_get_one_free_fruit_tea_rule, bulk_apple_purchases_rule]
+  end
+
+  context "without scanned items" do
+
+    it "has right total" do
+      co = Checkout.new(@pricing_rules)
+      expect(co.total).to eq 0
+    end
+
+    it "has right discount" do
+      co = Checkout.new(@pricing_rules)
+      expect(co.discount).to eq 0
+    end
+
+    it "has right product quantity" do
+      co = Checkout.new(@pricing_rules)
+      expect(co[:AP1]).to eq 0
+    end
+
+  end
+
+  context "with scanned items" do
+
+    it "has right total" do
+      co = Checkout.new(@pricing_rules)
+      co.scan(:FR1)
+      expect(co.total).to eq 3.11
+    end
+
+    it "has right product quantity" do
+      co = Checkout.new(@pricing_rules)
+      co.scan(:FR1)
+      expect(co[:FR1]).to eq 1
+    end
+
   end
 
   context "with test data" do
-
-    before do
-      @pricing_rules = [buy_one_get_one_free_fruit_tea_rule, bulk_apple_purchases_rule]
-    end
 
     it "does apply buy-one-get-one-free fruit tea rule" do
       co = Checkout.new(@pricing_rules)
@@ -56,12 +89,16 @@ describe "Checkout" do
       co.scan(:AP1)
       expect(co.total).to eq 16.61
     end
+
+    it "has right price without discount" do
+      co = Checkout.new(@pricing_rules)
+      co.scan(:FR1)
+      co.scan(:FR1)
+      expect(co.price_without_discount).to eq 6.22
+    end
   end
 
   context "with other baskets" do
-    before do
-      @pricing_rules = [buy_one_get_one_free_fruit_tea_rule, bulk_apple_purchases_rule]
-    end
 
     it "does not apply any rule" do
       co = Checkout.new(@pricing_rules)
