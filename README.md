@@ -1,0 +1,1 @@
+Simple checkout system implementation
